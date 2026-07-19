@@ -69,4 +69,4 @@ If you plan to deploy this publicly, consider adding:
 
 ## License
 
-MIT
+[MIT](LICENSE)
