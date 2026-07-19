@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Network Tracer</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #161a22;
+    --border: #262b36;
+    --text: #e6e8ec;
+    --muted: #8b92a3;
+    --accent: #4f8cff;
+    --danger: #ff5c5c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { margin: 0; font-size: 20px; }
+  header p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+
+  main {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px 24px 40px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  form {
+    display: flex;
+    gap: 8px;
+  }
+  input[type="text"] {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    font-size: 14px;
+  }
+  button {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  #status { color: var(--muted); font-size: 14px; min-height: 20px; }
+  #status.error { color: var(--danger); }
+
+  #map {
+    height: 360px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    font-size: 13px;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--muted); font-weight: 600; }
+  tr:last-child td { border-bottom: none; }
+  .timeout { color: var(--muted); font-style: italic; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Network Tracer</h1>
+  <p>Enter a domain or IP address to trace the route your traffic takes to reach it.</p>
+</header>
+
+<main>
+  <form id="trace-form">
+    <input type="text" id="target" placeholder="e.g. example.com or 8.8.8.8" required />
+    <button type="submit" id="submit-btn">Trace</button>
+  </form>
+
+  <div id="status"></div>
+
+  <div id="map"></div>
+
+  <table id="hops-table" style="display:none;">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>IP</th>
+        <th>Hostname</th>
+        <th>RTT (ms)</th>
+        <th>Location</th>
+        <th>ISP / ASN</th>
+      </tr>
+    </thead>
+    <tbody id="hops-body"></tbody>
+  </table>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const form = document.getElementById('trace-form');
+  const targetInput = document.getElementById('target');
+  const submitBtn = document.getElementById('submit-btn');
+  const statusEl = document.getElementById('status');
+  const table = document.getElementById('hops-table');
+  const tbody = document.getElementById('hops-body');
+
+  // Initialize the map, centered roughly on the world
+  const map = L.map('map').setView([20, 0], 2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+  }).addTo(map);
+
+  let markers = [];
+  let routeLine = null;
+
+  function clearMap() {
+    markers.forEach((m) => map.removeLayer(m));
+    markers = [];
+    if (routeLine) {
+      map.removeLayer(routeLine);
+      routeLine = null;
+    }
+  }
+
+  function renderMap(hops) {
+    clearMap();
+    const points = [];
+
+    hops.forEach((hop) => {
+      if (hop.lat == null || hop.lng == null) return;
+      const marker = L.marker([hop.lat, hop.lng]).addTo(map);
+      marker.bindPopup(
+        `<b>Hop ${hop.hop}</b><br/>${hop.ip || 'unknown'}<br/>${hop.city || ''} ${hop.country || ''}<br/>${hop.isp || ''}`
+      );
+      markers.push(marker);
+      points.push([hop.lat, hop.lng]);
+    });
+
+    if (points.length > 1) {
+      routeLine = L.polyline(points, { color: '#4f8cff', weight: 3 }).addTo(map);
+      map.fitBounds(routeLine.getBounds(), { padding: [30, 30] });
+    } else if (points.length === 1) {
+      map.setView(points[0], 6);
+    }
+  }
+
+  function renderTable(hops) {
+    tbody.innerHTML = '';
+    hops.forEach((hop) => {
+      const row = document.createElement('tr');
+      if (hop.timeout) {
+        row.innerHTML = `
+          <td>${hop.hop}</td>
+          <td colspan="5" class="timeout">* request timed out *</td>
+        `;
+      } else {
+        row.innerHTML = `
+          <td>${hop.hop}</td>
+          <td>${hop.ip || '-'}</td>
+          <td>${hop.hostname || '-'}</td>
+          <td>${hop.rtt ?? '-'}</td>
+          <td>${[hop.city, hop.country].filter(Boolean).join(', ') || '-'}</td>
+          <td>${hop.isp || '-'}</td>
+        `;
+      }
+      tbody.appendChild(row);
+    });
+    table.style.display = 'table';
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const target = targetInput.value.trim();
+    if (!target) return;
+
+    submitBtn.disabled = true;
+    statusEl.textContent = `Tracing route to ${target}...`;
+    statusEl.classList.remove('error');
+    table.style.display = 'none';
+    clearMap();
+
+    try {
+      const res = await fetch('/api/trace', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Something went wrong');
+      }
+
+      statusEl.textContent = `Done — ${data.hops.length} hop(s) to ${data.target}`;
+      renderTable(data.hops);
+      renderMap(data.hops);
+    } catch (err) {
+      statusEl.textContent = err.message;
+      statusEl.classList.add('error');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>
