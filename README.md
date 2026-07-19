@@ -45,9 +45,7 @@ network-tracer/
 │   └── geoip.js            # Looks up lat/lng + ISP for each hop's IP
 ├── public/
 │   └── index.html          # Frontend: form, hop table, Leaflet map
-├── package.json
-├── .env.example
-└── .gitignore
+└── package.json
 ```
 
 ## Notes on security
