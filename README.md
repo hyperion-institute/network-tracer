@@ -1,5 +1,5 @@
 <div align="center">
-<img src="https://capsule-render.vercel.app/api?type=rect&color=0:0f172a,100:1e293b&height=120&section=header&text=NETWORK%20TRACER&fontSize=32&fontColor=00ffcc&fontAlignY=55&desc=trace%20%7C%20geolocate%20%7C%20visualize&descAlignY=80&descSize=14&descColor=94a3b8" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=rect&color=0:0f172a,100:1e293b&height=120&section=header&text=NETWORK%20TRACER&fontSize=32&fontColor=00ffcc&fontAlignY=55&desc=trace%20%7C%20geolocate%20%7C%20visualize&descAlignY=80&descSize=14&descColor=94a3b8" width="100%" alt="Network Tracer"/>
 <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=18&duration=3000&pause=1000&color=00FFCC&center=true&vCenter=true&width=600&lines=trace+the+path+your+traffic+takes;every+hop%2C+geolocated+and+mapped;built+with+Node.js+%2B+Leaflet.js" alt="Typing SVG" />
 
 ![status](https://img.shields.io/badge/status-active-brightgreen)
