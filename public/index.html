@@ -185,7 +185,7 @@
 
   .hop-columns {
     display: grid;
-    grid-template-columns: 54px 130px 1fr 70px 1fr;
+    grid-template-columns: 54px 130px 70px 1fr 1fr;
     gap: 10px;
     padding: 8px 16px;
     font-size: 10.5px;
@@ -199,7 +199,7 @@
 
   .hop-row {
     display: grid;
-    grid-template-columns: 54px 130px 1fr 70px 1fr;
+    grid-template-columns: 54px 130px 70px 1fr 1fr;
     gap: 10px;
     padding: 8px 16px;
     font-size: 12.5px;
@@ -234,12 +234,9 @@
   }
 
   @media (max-width: 600px) {
-    .hop-columns, .hop-row { grid-template-columns: 34px 100px 1fr 55px; }
+    .hop-columns, .hop-row { grid-template-columns: 34px 100px 55px 1fr; }
     .hop-columns .hop-loc:last-child,
     .hop-row .hop-loc:last-child { display: none; }
-    .hop-loc { display: none; }
-    .hop-columns .hop-loc:nth-child(3),
-    .hop-row .hop-loc:nth-child(3) { display: block; }
   }
 </style>
 </head>
@@ -265,9 +262,9 @@
     <div class="hop-columns">
       <div>HOP</div>
       <div>IP ADDRESS</div>
-      <div>LOCATION</div>
       <div class="hop-rtt">RTT</div>
       <div>ISP</div>
+      <div>LOCATION</div>
     </div>
     <div id="hops-body"></div>
   </div>
@@ -350,9 +347,9 @@
         row.innerHTML = `
           <div class="hop-idx">//${idx}</div>
           <div class="hop-ip">${hop.ip || '-'}</div>
-          <div class="hop-loc">${loc}</div>
           <div class="hop-rtt">${hop.rtt != null ? hop.rtt + 'ms' : '-'}</div>
           <div class="hop-loc">${hop.isp || ''}</div>
+          <div class="hop-loc">${loc}</div>
         `;
       }
       hopsBody.appendChild(row);
