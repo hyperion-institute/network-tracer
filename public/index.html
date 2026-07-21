@@ -15,6 +15,7 @@
     --pink: #ff2079;
     --cyan: #05f7ff;
     --yellow: #e8ff2e;
+    --red: #ff2d3d;
     --text: #eef0f5;
     --muted: #6b6f8a;
     --clip: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
@@ -209,9 +210,9 @@
   .hop-row:last-child { border-bottom: none; }
   .hop-idx { color: var(--pink); }
   .hop-ip { color: var(--text); }
-  .hop-rtt { color: var(--cyan); text-align: right; }
+  .hop-rtt { color: var(--yellow); text-align: right; }
   .hop-loc { color: var(--muted); }
-  .hop-row.timeout { color: var(--yellow); }
+  .hop-row.timeout { color: var(--red); }
   .hop-row.timeout .signal { animation: flicker 1.4s infinite; }
 
   @keyframes reveal {
