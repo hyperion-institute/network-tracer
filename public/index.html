@@ -181,26 +181,21 @@
     text-transform: uppercase;
   }
   #log-header span { color: var(--cyan); }
-  .hop-columns{
-    display:grid;
-    grid-template-columns:54px 130px 1fr 70px 1fr;
-    gap:10px;
 
-    padding:8px 16px;
-
-    font-size:11px;
-    letter-spacing:1px;
-    text-transform:uppercase;
-    font-weight:700;
-
-    color:var(--yellow);
-
-    border-bottom:1px solid var(--panel-border);
+  .hop-columns {
+    display: grid;
+    grid-template-columns: 54px 130px 1fr 70px 1fr;
+    gap: 10px;
+    padding: 8px 16px;
+    font-size: 10.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--yellow);
+    border-bottom: 1px solid var(--panel-border);
+    background: rgba(255,255,255,0.02);
   }
+  .hop-columns .hop-rtt { text-align: right; }
 
-  .hop-columns div:nth-child(4){
-    text-align:right;
-  }
   .hop-row {
     display: grid;
     grid-template-columns: 54px 130px 1fr 70px 1fr;
@@ -238,8 +233,12 @@
   }
 
   @media (max-width: 600px) {
-    .hop-row { grid-template-columns: 34px 100px 1fr 55px; }
+    .hop-columns, .hop-row { grid-template-columns: 34px 100px 1fr 55px; }
+    .hop-columns .hop-loc:last-child,
+    .hop-row .hop-loc:last-child { display: none; }
     .hop-loc { display: none; }
+    .hop-columns .hop-loc:nth-child(3),
+    .hop-row .hop-loc:nth-child(3) { display: block; }
   }
 </style>
 </head>
@@ -261,19 +260,14 @@
   <div id="map"></div>
 
   <div id="log-panel">
-    <div id="log-header">
-      <span>// HOP LOG</span>
-      <span id="log-count"></span>
-    </div>
-
+    <div id="log-header"><span>// HOP LOG</span><span id="log-count"></span></div>
     <div class="hop-columns">
-      <div title="Hop Number">HOP</div>
-      <div title="IP Address">IP ADDRESS</div>
-      <div title="City, Country">LOCATION</div>
-      <div title="Round Trip Time">RTT</div>
-      <div title="Network / ISP">NETWORK / ISP</div>
+      <div>HOP</div>
+      <div>IP ADDRESS</div>
+      <div>LOCATION</div>
+      <div class="hop-rtt">RTT</div>
+      <div>ISP</div>
     </div>
-
     <div id="hops-body"></div>
   </div>
 </main>
